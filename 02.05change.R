@@ -26,11 +26,11 @@ input$machine_id <- as.factor(input$machine_id)
 any(is.na(input))
 str(input)
 
-samp <- sample(20000,20000)
-testinput <- input[samp,]
+#samp <- sample(20000,20000)
+#testinput <- input[samp,]
 
-dim(input)
-summary(input)
+#dim(input)
+#summary(input)
 
 fit_all = glm(test_result~time_to_run_test+run_num+machine_id,binomial(link = 'logit'),data = testinput)
 summary(fit_all)
