@@ -28,7 +28,6 @@ str(input)
 
 #samp <- sample(20000,20000)
 #testinput <- input[samp,]
-
 #dim(input)
 #summary(input)
 
