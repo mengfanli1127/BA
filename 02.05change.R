@@ -58,3 +58,5 @@ sig_output <- output %>%
   rowwise %>%
   mutate(logit = list(as_tibble(coef(summary(logit)), rownames = "param"))) %>%
   filter(any(logit$`Pr(>|z|)` < 0.05))
+
+# test connect 
