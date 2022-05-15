@@ -4,17 +4,19 @@ install.packages("data.table")
 library(data.table)
 #install.packages("sampling")
 #library(sampling)
-dir = "/Users/limengfan-eleanor/Desktop/task/iso-per-test-results 2"
+dir = "/Users/limengfan-eleanor/Desktop/BaThesis/BA/iso-per-test-results2"
 file_list = list.files(path = dir,pattern = "*.csv$",recursive = TRUE,full.names = TRUE)
-store_csv = paste(dir,"merge.csv")
+#store_csv = paste(dir,"merge.csv")
 df <- list()
 for (i in file_list) {
-  df[i] = read_csv(i)
+  df[i] = read.csv(i)
   #write_csv(df,store_csv,append=TRUE,col_names= FALSE)
   colnames(df[i]) <- c('test_name','test_result','time_to_run_test','run_num','machine_id','test_class_order_md5sum','num_test_class','module_path','slug','sha')
+  
 }
-#mergedata <- read.csv("E:/R/data/iso-per-test-results 2 merge.csv")
 mergedata <- bind_rows(df)
+#mergedata <- read.csv("E:/R/data/iso-per-test-results 2 merge.csv")
+
 #colnames(mergedata) <- c('test_name','test_result','time_to_run_test','run_num','machine_id','test_class_order_md5sum','num_test_class','module_path','slug','sha')
 
 input <- mergedata[,c('test_result','time_to_run_test','run_num','machine_id')]
