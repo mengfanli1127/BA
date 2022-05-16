@@ -50,7 +50,7 @@ input <- mergedata %>%
 output <- input %>%
   group_by(test_name) %>%
   filter(n_distinct(test_result)>1) %>%
-  summarize(logit = list(glm(test_result ~ time_to_run_test + run_num + machine_id, family = "binomial")))
+  summarize(runs = n(), failures = sum(test_result), logit = list(glm(test_result ~ time_to_run_test + run_num + machine_id, family = "binomial")))
 
 ## comment: the above puts the glm objects directly into the dataframe along with the test names. this then needs further processing. for instance, we may want to know which of these tests have any significant coefficients.
 
