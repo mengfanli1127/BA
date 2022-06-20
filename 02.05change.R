@@ -59,4 +59,56 @@ sig_output <- output %>%
   mutate(logit = list(as_tibble(coef(summary(logit)), rownames = "param"))) %>%
   filter(any(logit$`Pr(>|z|)` < 0.05))
 
-# test connect 
+
+
+## here begins the method of the logistf
+install.packages("logistf")
+library(logistf)
+ind = sample(nrow(input),nrow(input)*4/5)
+training <- input[ind,]
+testing <- input[-ind,]
+fit<- input %>%
+  group_by(test_name) %>%
+  filter(n_distinct(test_result)>1) %>%
+  summarise(logit = list(logistf(test_result ~ time_to_run_test + run_num + machine_id,firth = FALSE,pl = TRUE)))
+
+fit<- input %>%
+  group_by(test_name) %>%
+  filter(n_distinct(test_result)>1)
+
+logi <- logistf(data = fit, test_result ~ time_to_run_test + run_num + machine_id,firth = FALSE,pl = TRUE)
+
+sig_output_fit <- fit %>%
+  rowwise %>%
+  mutate(logit = list(as_tibble(coef(summary(logit)), rownames = "param"))) %>%
+  filter(any(logit$`Pr(>|z|)` < 0.05))
+
+
+
+## here is the method of the zelig
+
+devtools::install_github('IQSS/Zelig')
+install.packages("zeligverse")
+library(Zelig)
+sum(input$test_result == 1)
+tau = 32765/428000
+
+fit_two <-  input %>%
+  group_by(test_name) %>%
+  filter(n_distinct(test_result)>1)
+
+z.out1 <- zelig(test_result ~ time_to_run_test + run_num + machine_id,data = fit_two, model = "relogit",tau = 32765/428000)
+summary(z.out1)
+
+sig_output_two <-
+  mutate(logit = list(as_tibble(coef(summary(z.out1)), rownames = "param"))) %>%
+  filter(any(logit$`Pr(>|z|)` < 0.05))
+
+fit_thr <- input %>%
+  group_by(test_name) %>%
+  filter(n_distinct(test_result)>1) %>%
+  summarize(runs = n(), failures = sum(test_result),logit = list(zelig(test_result ~ time_to_run_test + run_num + machine_id,data = input, model = "ls",cite = FALSE)))
+
+summ_one <- fit_two %>%
+  summarise(runs = n(), failures = sum(test_result),logit = list(zelig(test_result ~ time_to_run_test + run_num + machine_id,data = fit_two, model = "ls",cite = FALSE)))
+
