@@ -69,31 +69,25 @@ sig_output <- output %>%
 install.packages("logistf")
 library(logistf)
 
-ind = sample(nrow(input),nrow(input)*4/5)
-training <- input[ind,]
-testing <- input[-ind,]
-
 fit<- input %>%
   group_by(test_name) %>%
   filter(n_distinct(test_result)>1) %>%
   summarise(logit = list(logistf(test_result ~ time_to_run_test + run_num + machine_id,firth = TRUE,pl = TRUE)))
- 
-##fit<- input %>%
-  ##group_by(test_name) %>%
-  ##filter(n_distinct(test_result)>1)
-
-##logi <- logistf(data = fit, test_result ~ time_to_run_test + run_num + machine_id,firth = FALSE,pl = TRUE)
 
 sig_output_fit <- fit %>%
   rowwise %>%
   mutate(logit = list(as_tibble(coef(summary(logit)), rownames = "param"))) %>%
   filter(any(logit$`Pr(>|z|)` < 0.05))
 
+##another try of the method one
+fit<- input %>%
+  group_by(test_name) %>%
+  filter(n_distinct(test_result)>1) %>%
+  summarise(runs = n(), failures = sum(test_result),logit = list(logistf(test_result ~ time_to_run_test + run_num + machine_id,firth = TRUE,pl = TRUE)))
 
 
 
 ## here begins the method of the zelig
-
 devtools::install_github('IQSS/Zelig')
 install.packages("zeligverse")
 library(Zelig)
