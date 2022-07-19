@@ -60,11 +60,6 @@ sig_output <- output %>%
   filter(any(logit$`Pr(>|z|)` < 0.05))
 
 
-
-
-
-
-
 ## here begins the method of the logistf
 install.packages("logistf")
 library(logistf)
@@ -87,17 +82,30 @@ fit<- input %>%
 
 
 
-## here begins the method of the zelig
+####the final version of the method 01
+
+test_data_final <- input %>% filter(test_name != "org.java_websocket.issues.Issue256Test.runReconnectScenario1")
+
+logit_final <- test_data_final %>% 
+  group_by(test_name) %>% 
+  filter(n_distinct(test_result)>1) %>% 
+  summarise(runs = n(), failures = sum(test_result),logit = list(logistf(test_result ~ time_to_run_test + run_num + machine_id,firth = TRUE,pl = TRUE)))
+
+
+
+
+
+## here begins the method of the zelig(just a try,still need more considerations)
 devtools::install_github('IQSS/Zelig')
 install.packages("zeligverse")
 library(Zelig)
-sum(input$test_result == 1)
-tau = 32765/428000
+
 
 fit_two <- input %>%
   group_by(test_name) %>%
   filter(n_distinct(test_result)>1) %>%
-  summarize(runs = n(), failures = sum(test_result),logit = list(zelig(test_result ~ time_to_run_test + run_num + machine_id,data = input, model = "ls",cite = FALSE)))
+  mutate(tau = sum(test_result == 1)/n()) %>%
+  summarize(runs = n(), failures = sum(test_result),logit = list(zelig(test_result ~ time_to_run_test + run_num + machine_id,data = input, model = "ls",cite = FALSE,tau = tau)))
 
 sig_output_two <-
   mutate(logit = list(as_tibble(coef(summary(logit)), rownames = "param"))) %>%
